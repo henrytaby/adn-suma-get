@@ -121,6 +121,15 @@ python main.py status
 python main.py info
 ```
 
+**Extraer datos DIM (Ingreso de Mercancías):**
+```bash
+# Extracción básica
+python main.py dim --fecha-desde 01/04/2025 --fecha-hasta 30/04/2025
+
+# Con nueva autenticación
+python main.py dim --fecha-desde 01/04/2025 --fecha-hasta 30/04/2025 --force-auth
+```
+
 ### Estructura de archivos generados
 
 ```
@@ -130,6 +139,9 @@ output/
 │       ├── authentication_response_143022.json
 │       ├── credentials_response_143025.json
 │       └── verify_response_143028.json
+├── dim_01042025_30042025/
+│   └── 2024-01-15/
+│       └── dim_data_20240115_143022.json
 ├── credenciales.json
 └── verificar.json
 ```

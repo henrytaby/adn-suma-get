@@ -3,8 +3,9 @@ Comandos CLI para el sistema ADN
 """
 import click
 from app.services.auth_service import AuthService
+from app.services.dim_service import DIMService
 from app.core.logger import app_logger
-from app.core.exceptions import AuthenticationError
+from app.core.exceptions import AuthenticationError, DataProcessingError
 
 @click.group()
 def cli():
@@ -80,12 +81,52 @@ def info():
     
     click.echo("🔧 Configuración del sistema:")
     click.echo(f"  URL B-SSO: {settings.url_b_sso}")
+    click.echo(f"  URL N-INGRESO: {settings.url_n_ingreso}")
     click.echo(f"  Usuario: {settings.nombre_usuario}")
     click.echo(f"  Directorio de salida: {settings.output_dir}")
     click.echo(f"  Archivo de credenciales: {settings.credentials_file}")
     click.echo(f"  Archivo de verificación: {settings.verify_file}")
     click.echo(f"  Timeout de requests: {settings.request_timeout}s")
     click.echo(f"  Reintentos máximos: {settings.max_retries}")
+
+@cli.command()
+@click.option('--fecha-desde', required=True, help='Fecha desde (formato: DD/MM/YYYY)')
+@click.option('--fecha-hasta', required=True, help='Fecha hasta (formato: DD/MM/YYYY)')
+@click.option('--force-auth', is_flag=True, help='Forzar nueva autenticación antes de extraer')
+def dim(fecha_desde, fecha_hasta, force_auth):
+    """Extraer datos DIM (Ingreso de Mercancías)"""
+    try:
+        # Verificar autenticación si es necesario
+        if force_auth:
+            app_logger.info("Forzando nueva autenticación...")
+            auth_service = AuthService()
+            auth_service.full_auth_process()
+        
+        # Iniciar extracción DIM
+        dim_service = DIMService()
+        def show_total(total):
+            click.echo(f"🔎 Total de registros encontrados: {total}")
+        result = dim_service.extract_all_dim_data(fecha_desde, fecha_hasta, show_total_callback=show_total)
+        
+        # Mostrar resultados
+        click.echo("✅ Extracción DIM completada exitosamente")
+        click.echo(f"📅 Rango de fechas: {result['fecha_desde']} - {result['fecha_hasta']}")
+        click.echo(f"📊 Total de registros: {result['total_records']}")
+        click.echo(f"📄 Total de páginas: {result['total_pages']}")
+        click.echo(f"📋 Registros extraídos: {result['records_extracted']}")
+        click.echo(f"⏱️  Duración: {result['extraction_info']['duration_seconds']:.2f} segundos")
+        
+        if result['total_records'] > 0:
+            click.echo(f"💾 Datos guardados en carpeta: dim_{fecha_desde.replace('/', '')}_{fecha_hasta.replace('/', '')}")
+        
+    except DataProcessingError as e:
+        app_logger.error(f"Error en extracción DIM: {str(e)}")
+        click.echo(f"❌ Error en extracción DIM: {str(e)}")
+        exit(1)
+    except Exception as e:
+        app_logger.error(f"Error inesperado en extracción DIM: {str(e)}")
+        click.echo(f"❌ Error inesperado: {str(e)}")
+        exit(1)
 
 if __name__ == '__main__':
     cli() 

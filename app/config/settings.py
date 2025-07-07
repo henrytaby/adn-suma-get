@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     nombre_usuario: str = Field(..., env="NOMBRE_USUARIO")
     password: str = Field(..., env="PASSWORD")
     url_b_sso: str = Field(..., env="URL_B_SSO")
+    url_n_ingreso: str = Field(..., env="URL_N_INGRESO")
     size_list: int = Field(default=100, env="SIZE_LIST")
     
     # Configuración de la aplicación
