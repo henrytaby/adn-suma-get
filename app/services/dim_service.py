@@ -32,7 +32,8 @@ class DIMService:
                 date_obj = date_obj.replace(hour=0, minute=0, second=0, microsecond=0)
             else:
                 # 23:59:59 para fecha fin
-                date_obj = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+                #date_obj = date_obj.replace(hour=23, minute=59, second=59, microsecond=999999)
+                date_obj = date_obj.replace(hour=0, minute=0, second=0, microsecond=0)
             
             # Convertir a timestamp en segundos
             timestamp_seconds = int(date_obj.timestamp())
@@ -181,7 +182,7 @@ class DIMService:
             
             # Parámetros de consulta
             params = {
-                "page": page,
+                "page": page * self.settings.size_list,
                 "size": self.settings.size_list,
                 "data.estAct_0": "REGISTRADO",
                 "data.estAct_1": "OBSERVADO",
