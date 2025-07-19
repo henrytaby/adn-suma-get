@@ -1,0 +1,5 @@
+use("suma")
+
+//db.dim.find().count()
+db.dim.find().limit(5).pretty()
+// db.dim.find().limit(5).pretty()

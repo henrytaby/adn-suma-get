@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     user_agent: str = Field(default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", env="USER_AGENT")
     accept_language: str = Field(default="es-ES,es;q=0.9,en;q=0.8", env="ACCEPT_LANGUAGE")
     
+    # Configuración de MongoDB
+    mongodb_uri: str = Field(default="mongodb://localhost:27017/", env="MONGODB_URI")
+    mongodb_db: str = Field(default="suma", env="MONGODB_DB")
+    mongodb_collection: str = Field(default="dim", env="MONGODB_COLLECTION")
+    
     class Config:
         env_file = "config.env"
         case_sensitive = False

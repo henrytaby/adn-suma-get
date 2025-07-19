@@ -10,6 +10,7 @@ from app.core.file_manager import FileManager
 from app.core.logger import app_logger
 from app.core.exceptions import APIError, DataProcessingError
 from app.services.auth_service import AuthService
+from app.core.mongo_manager import MongoManager
 
 class DIMService:
     """Servicio para extracción de datos DIM"""
@@ -311,7 +312,13 @@ class DIMService:
             file_path = self.file_manager.save_json(result, filename, folder_name)
             
             app_logger.info(f"Extracción completada: {len(all_data)} registros guardados en {file_path}")
-            
+
+            # Guardar en MongoDB
+            if all_data:
+                mongo_manager = MongoManager()
+                mongo_count = mongo_manager.upsert_documents(all_data)
+                app_logger.info(f"{mongo_count} documentos insertados/actualizados en MongoDB.")
+
             return result
             
         except Exception as e:
