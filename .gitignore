@@ -137,3 +137,8 @@ logs/
 *.log
 
 # NOTA: config.env.example SÍ debe incluirse en el repositorio 
+#Old
+old/
+*.xlsx
+*.xls
+*.csv

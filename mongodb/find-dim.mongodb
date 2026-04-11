@@ -1,5 +1,82 @@
 use("suma")
 
 //db.dim.find().count()
-db.dim.find().limit(5).pretty()
+//db.dim.find().limit(5).pretty()
 // db.dim.find().limit(5).pretty()
+/**/ 
+/*
+db.dim.find({
+    fecTra:{
+        $gte: 1735704000000,
+        $lte: 1735790400000  
+    }
+}).sort({fecTra:1}).count()
+*/
+/**/
+/*
+db.dim.find({
+    fecTra:{
+        $gte: 1735790400000,
+        $lte: 1735876800000  
+    }
+}).sort({fecTra:1}).pretty()
+*/
+/*
+db.dim.find(
+    {
+      fecTra: {
+        $gte: 1735704000000,
+        $lte: 1735876800000
+      },
+      num:"DI-2025-701-2000018"
+
+    },
+    {
+      _id: 0,
+      estAct: 1,
+      num: 1,
+      fecTra: 1,
+      "sel.can": 1,
+      desDesRegAdu:1,
+      desModReg:1,
+      desModDep:1,
+      "dec.nomRazSoc":1,
+      "imp.nomRazSoc":1,
+      primerNomRazSoc: { $arrayElemAt: [ "$pro.nomRazSoc", 0 ]
+      
+      
+      
+    }
+  ).pretty()
+  */
+//).sort({ fecTra: 1 }).pretty()
+
+db.dim.aggregate([
+    {
+      $match: {
+        fecTra: {
+          $gte: 1735704000000,
+          $lte: 1735876800000
+        }
+        //,num:"DI-2025-701-2000018"
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        estAct: 1,
+        num: 1,
+        fecTra: 1,
+        "sel.can": 1,
+        desDesRegAdu: 1,
+        desModReg: 1,
+        desModDep: 1,
+        "dec.nomRazSoc": 1,
+        "imp.nomRazSoc": 1,
+        nomRazSoc: { $arrayElemAt: [ "$pro.nomRazSoc", 0 ] },
+        "lug.desPaiPro":1,
+        "totConDec.totFob":1,
+        "totConDec.totPesBru":1,
+      }
+    }
+  ])
