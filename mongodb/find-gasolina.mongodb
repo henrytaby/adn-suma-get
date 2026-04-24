@@ -1,0 +1,200 @@
+db.manifiestos.aggregate([
+  {
+    $match: {
+      "data.docEmb.ite.des": { $regex: "GASOLINA", $options: "i" },
+      //"data.num": "MI-2026-643-228184"
+    }
+  },
+  {
+    $project: {
+      "num_manifiesto": "$data.num",
+      "num_sis": "$data.cab.numSis",
+      "num_di": { $first: "$data.docEmb.decMerRel" },
+      "estado": "$data.estAct",
+      "fecha_autorizacion": "$fecha_autorizacion_busqueda",
+      "aduana_ingreso_cod": "$data.cab.codAduIng",     
+      "aduana_ingreso_nom": "$data.cab.desAduIng",
+      "emisor_nit": "$data.ope.emi.numDoc",
+      "emisor_nombre": "$data.ope.emi.nom",
+
+      
+      // SOLUCIÓN PARA PLACA:
+      // 1. Tomamos el primer transportista del array 'tra'
+      // 2. Accedemos a medTra.pla
+      "placa_vehiculo": { $let: {
+          vars: { primero: { $first: "$data.ope.tra" } },
+          in: "$$primero.medTra.pla"
+      }},
+
+      // SOLUCIÓN PARA CONDUCTOR:
+      // 1. Tomamos el primer transportista
+      // 2. De ese transportista, tomamos el primer conductor del array 'con'
+      // 3. Accedemos al nombre
+      "conductor_nombre": { $let: {
+          vars: { primero: { $first: "$data.ope.tra" } },
+          in: { $first: "$$primero.con.nom" }
+      }},
+      
+      "total_peso_bruto": "$data.totConManCar.totPesBru",
+      "usuario_procesador": "$data.sel.tecRev.nomUsu",
+      
+      // --- NUEVOS CAMPOS ACOMER ---
+      // Accedemos al primer docEmb y luego al primer ite
+      "acomer_cod": { 
+        $let: {
+          vars: { 
+            primerDoc: { $first: "$data.docEmb" } 
+          },
+          in: { $first: "$$primerDoc.ite.acoMer.cod" }
+        }
+      },
+      "acomer_des": { 
+        $let: {
+          vars: { 
+            primerDoc: { $first: "$data.docEmb" } 
+          },
+          in: { $first: "$$primerDoc.ite.acoMer.des" }
+        }
+      },
+      
+      // --- LÓGICA PARA DOCUMENTOS DE SOPORTE (IM-005 e IM-014) ---
+      
+      // Buscamos IM-005 (Ministerio de Gobierno)
+      "res_adm_mingo_cod": {
+        $let: {
+          vars: {
+            doc: {
+              $first: {
+                $filter: {
+                  input: { $first: "$data.docEmb.docSop" },
+                  as: "soporte",
+                  cond: { $eq: ["$$soporte.codTip", "IM-005"] }
+                }
+              }
+            }
+          },
+          in: "$$doc.codTip"
+        }
+      },
+      "res_adm_mingo_des": {
+        $let: {
+          vars: {
+            doc: {
+              $first: {
+                $filter: {
+                  input: { $first: "$data.docEmb.docSop" },
+                  as: "soporte",
+                  cond: { $eq: ["$$soporte.codTip", "IM-005"] }
+                }
+              }
+            }
+          },
+          in: "$$doc.desTip"
+        }
+      },
+      
+      "res_adm_mingo_num": {
+        $let: {
+          vars: {
+            doc: {
+              $first: {
+                $filter: {
+                  input: { $first: "$data.docEmb.docSop" },
+                  as: "soporte",
+                  cond: { $eq: ["$$soporte.codTip", "IM-005"] }
+                }
+              }
+            }
+          },
+          in: "$$doc.num"
+        }
+      },
+
+      // Buscamos IM-014 (ANH)
+      "res_adm_anh_cod": {
+        $let: {
+          vars: {
+            doc: {
+              $first: {
+                $filter: {
+                  input: { $first: "$data.docEmb.docSop" },
+                  as: "soporte",
+                  cond: { $eq: ["$$soporte.codTip", "IM-014"] }
+                }
+              }
+            }
+          },
+          in: "$$doc.codTip"
+        }
+      },
+      "res_adm_anh_des": {
+        $let: {
+          vars: {
+            doc: {
+              $first: {
+                $filter: {
+                  input: { $first: "$data.docEmb.docSop" },
+                  as: "soporte",
+                  cond: { $eq: ["$$soporte.codTip", "IM-014"] }
+                }
+              }
+            }
+          },
+          in: "$$doc.desTip"
+        }
+      },
+      "res_adm_anh_num": {
+        $let: {
+          vars: {
+            doc: {
+              $first: {
+                $filter: {
+                  input: { $first: "$data.docEmb.docSop" },
+                  as: "soporte",
+                  cond: { $eq: ["$$soporte.codTip", "IM-014"] }
+                }
+              }
+            }
+          },
+          in: "$$doc.num"
+        }
+      },
+      
+      // --- EXTRACCIÓN DE LA PARTIDA ARANCELARIA (Ej: 2710.12.59) ---
+      "partida_arancelaria": {
+        $let: {
+          vars: { primerDoc: { $first: "$data.docEmb" } },
+          in: {
+            $let: {
+              vars: {
+                coincidencia: {
+                  $regexFind: {
+                    input: "$$primerDoc.recCar.desMer",
+                    regex: /[0-9]{4}\.[0-9]{2}\.[0-9]{2}/
+                  }
+                }
+              },
+              in: "$$coincidencia.match"
+            }
+          }
+        }
+      },
+      //--------------
+      //--------------
+      
+      // NUEVO: Descripción de la Mercancía desde recCar
+      "descripcion_mercancia": {
+        $let: {
+          vars: { primerDoc: { $first: "$data.docEmb" } },
+          in: "$$primerDoc.recCar.desMer"
+        }
+      },
+      
+      //--------------
+      
+      
+      
+      
+    }
+  }
+])

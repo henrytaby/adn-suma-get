@@ -7,7 +7,7 @@ client = MongoClient("mongodb://localhost:27017")
 
 # Base de datos y colección
 db = client["suma"]
-collection = db["dim"]
+collection = db["dim-pisoss"]
 
 
 def _convert_date_to_timestamp(date_str: str, start_of_day: bool = True) -> int:
@@ -27,8 +27,8 @@ def _convert_timestamp_to_str(timestamp: int) -> str:
     return dt.strftime("%d/%m/%Y %H:%M:%S")
 
 # Timestamps de búsqueda
-start_timestamp = _convert_date_to_timestamp(date_str="31/12/2025", start_of_day=True)
-end_timestamp = _convert_date_to_timestamp(date_str="01/04/2026", start_of_day=False)
+start_timestamp = _convert_date_to_timestamp(date_str="20/04/2026", start_of_day=True)
+end_timestamp = _convert_date_to_timestamp(date_str="23/04/2026", start_of_day=False)
 print(f"Fecha inicio : {start_timestamp}")
 print(f"Fecha Fin : {end_timestamp}")
 

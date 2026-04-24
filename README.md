@@ -130,6 +130,15 @@ python main.py dim --fecha-desde 01/04/2025 --fecha-hasta 30/04/2025
 python main.py dim --fecha-desde 01/04/2025 --fecha-hasta 30/04/2025 --force-auth
 ```
 
+**Extraer datos de Manifiestos de Carga:**
+```bash
+# Extracción de manifiestos con fechas y fecha de autorización
+python main.py manifiesto --fecha-desde 20/03/2026 --fecha-hasta 20/04/2026 --fecha-autorizacion 20/04/2026
+
+# Con nueva autenticación
+python main.py manifiesto --fecha-desde 20/03/2026 --fecha-hasta 20/04/2026 --fecha-autorizacion 20/04/2026 --force-auth
+```
+
 ### Estructura de archivos generados
 
 ```
@@ -142,6 +151,9 @@ output/
 ├── dim_01042025_30042025/
 │   └── 2024-01-15/
 │       └── dim_data_20240115_143022.json
+├── manifiestos_20032026_20042026/
+│   └── 2024-01-15/
+│       └── manifiesto_data_20240115_143022.json
 ├── credenciales.json
 └── verificar.json
 ```

@@ -128,5 +128,47 @@ def dim(fecha_desde, fecha_hasta, force_auth):
         click.echo(f"❌ Error inesperado: {str(e)}")
         exit(1)
 
+@cli.command()
+@click.option('--fecha-desde', required=True, help='Fecha desde (formato: DD/MM/YYYY)')
+@click.option('--fecha-hasta', required=True, help='Fecha hasta (formato: DD/MM/YYYY)')
+@click.option('--fecha-autorizacion', required=True, help='Fecha autorización (formato: DD/MM/YYYY)')
+@click.option('--force-auth', is_flag=True, help='Forzar nueva autenticación antes de extraer')
+def manifiesto(fecha_desde, fecha_hasta, fecha_autorizacion, force_auth):
+    """Extraer datos de Manifiestos de Carga"""
+    try:
+        from app.services.manifiesto_service import ManifiestoService
+        # Verificar autenticación si es necesario
+        if force_auth:
+            app_logger.info("Forzando nueva autenticación...")
+            auth_service = AuthService()
+            auth_service.full_auth_process()
+        
+        # Iniciar extracción Manifiesto
+        manifiesto_service = ManifiestoService()
+        def show_total(total):
+            click.echo(f"🔎 Total de registros encontrados: {total}")
+        result = manifiesto_service.extract_all_data(fecha_desde, fecha_hasta, fecha_autorizacion, show_total_callback=show_total)
+        
+        # Mostrar resultados
+        click.echo("✅ Extracción de Manifiestos completada exitosamente")
+        click.echo(f"📅 Rango de fechas: {result['fecha_desde']} - {result['fecha_hasta']}")
+        click.echo(f"📅 Fecha Autorización: {result['fecha_autorizacion']}")
+        click.echo(f"📊 Total de registros: {result['total_records']}")
+        click.echo(f"📄 Total de páginas: {result['total_pages']}")
+        click.echo(f"📋 Registros extraídos: {result['records_extracted']}")
+        click.echo(f"⏱️  Duración: {result['extraction_info']['duration_seconds']:.2f} segundos")
+        
+        if result['total_records'] > 0:
+            click.echo(f"💾 Datos guardados en carpeta: manifiestos_{fecha_desde.replace('/', '')}_{fecha_hasta.replace('/', '')}")
+        
+    except DataProcessingError as e:
+        app_logger.error(f"Error en extracción Manifiestos: {str(e)}")
+        click.echo(f"❌ Error en extracción Manifiestos: {str(e)}")
+        exit(1)
+    except Exception as e:
+        app_logger.error(f"Error inesperado en extracción Manifiestos: {str(e)}")
+        click.echo(f"❌ Error inesperado: {str(e)}")
+        exit(1)
+
 if __name__ == '__main__':
     cli() 

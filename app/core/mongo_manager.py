@@ -7,11 +7,14 @@ from app.config.settings import get_settings
 from app.core.logger import app_logger
 
 class MongoManager:
-    def __init__(self):
+    def __init__(self, collection_name=None):
         settings = get_settings()
         self.client = MongoClient(settings.mongodb_uri)
         self.db = self.client[settings.mongodb_db]
-        self.collection = self.db[settings.mongodb_collection]
+        
+        # Usar la colección pasada por parámetro, si no, usar la por defecto
+        col_name = collection_name if collection_name else settings.mongodb_collection
+        self.collection = self.db[col_name]
 
     def upsert_documents(self, documents):
         """
